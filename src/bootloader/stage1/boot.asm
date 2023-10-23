@@ -105,29 +105,29 @@ start:
     mov bx, buffer ; es:bx = buffer
     call disk_read
 
-    ; search for kernel.bin
+    ; search for stage1.bin
     xor bx, bx
     mov di, buffer
 
-.search_kernel:
-    mov si, file_kernel_bin
+.search_stage1:
+    mov si, file_stage1_bin
     mov cx, 11 ; compare up to 11 characters
     push di
     repe cmpsb
     pop di
-    je .found_kernel
+    je .found_stage1
 
     add di, 32
     inc bx
     cmp bx, [bdb_dir_entries_count]
-    jl .search_kernel
+    jl .search_stage1
 
-    jmp kernel_not_found_error
+    jmp stage1_not_found_error
 
-.found_kernel:
+.found_stage1:
 
     mov ax, [di + 26] ; first logical cluster field (offset 26)
-    mov [kernel_cluster], ax 
+    mov [stage1_cluster], ax 
 
     ; load FAT from disk into memory
     mov ax, [bdb_reserved_sectors]
@@ -136,15 +136,15 @@ start:
     mov dl, [ebr_drive_number]
     call disk_read
 
-    ; read kernel and process FAT chain
-    mov bx, KERNEL_LOAD_SEGMENT
+    ; read stage1 and process FAT chain
+    mov bx, stage1_LOAD_SEGMENT
     mov es, bx
-    mov bx, KERNEL_LOAD_OFFSET
+    mov bx, stage1_LOAD_OFFSET
 
-.load_kernel_loop:
+.load_stage1_loop:
 
     ;read next cluster
-    mov ax, [kernel_cluster]
+    mov ax, [stage1_cluster]
     ; not nice hardcoded values
     add ax, 31  ; first cluster = (kenrel_cluster -2) * sectors_per_cluster + start_sector
                 ; start sector = reserved + fats + root directory size = 1 + 18 + 134 = 33 
@@ -156,7 +156,7 @@ start:
     add bx, [bdb_bytes_per_sector]
 
     ; compute location of nect cluster
-    mov ax, [kernel_cluster]
+    mov ax, [stage1_cluster]
     mov cx, 3
     mul cx
     mov cx, 2
@@ -180,19 +180,19 @@ start:
     cmp ax, 0x0FF8 ; end of chain
     jae .read_finish
 
-    mov [kernel_cluster], ax
-    jmp .load_kernel_loop
+    mov [stage1_cluster], ax
+    jmp .load_stage1_loop
 
 .read_finish:
 
-    ; jump to our kernel
+    ; jump to our stage1
     mov dl, [ebr_drive_number] ; boot device in dl
 
-    mov ax, KERNEL_LOAD_SEGMENT ; set segment registers
+    mov ax, stage1_LOAD_SEGMENT ; set segment registers
     mov ds, ax
     mov es, ax
 
-    jmp KERNEL_LOAD_SEGMENT:KERNEL_LOAD_OFFSET
+    jmp stage1_LOAD_SEGMENT:stage1_LOAD_OFFSET
 
     jmp wait_key_and_reboot ; should never happen
 
@@ -208,8 +208,8 @@ floppy_error:
     call puts
     jmp wait_key_and_reboot
 
-kernel_not_found_error:
-    mov si, msg_kernel_not_found
+stage1_not_found_error:
+    mov si, msg_stage1_not_found
     call puts
     jmp wait_key_and_reboot
 
@@ -356,12 +356,12 @@ disk_reset:
 
 msg_loading: db 'Loading...', ENDL, 0
 msg_read_failed: db 'ERR: disk read fail!', ENDL, 0
-msg_kernel_not_found: db 'ERR: kernel not found!', ENDL, 0
-file_kernel_bin: db 'KERNEL  BIN'
-kernel_cluster: dw 0
+msg_stage1_not_found: db 'ERR: stage 2 not found!', ENDL, 0
+file_stage1_bin: db 'STAGE2  BIN'
+stage1_cluster: dw 0
 
-KERNEL_LOAD_SEGMENT: equ 0x2000
-KERNEL_LOAD_OFFSET: equ 0
+stage1_LOAD_SEGMENT: equ 0x2000
+stage1_LOAD_OFFSET: equ 0
 
 times  510-($-$$) db 0
 dw 0AA55h
