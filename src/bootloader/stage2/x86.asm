@@ -19,8 +19,8 @@ _x86_div64_32:
     ; [bp + 4] - dividend (lower 32 bist)
     ; [bp + 8] - dividend (upper 32 bist)
     ; [bp + 12] - divisor
-    ; [bp + 16] - quotientOut
-    ; [bp + 18] - remainderOut
+    ; [bp + 16] - quotientOut (address in memory)
+    ; [bp + 18] - remainderOut (address in memory)
 
     ; divide upper 32 bits
     mov eax, [bp + 8]   ; eax <- upper 32 bits of dividend
