@@ -5,7 +5,17 @@ void putc(char c)
 {
     x86_Video_WriteCharTeletype(c, 0);
 }
+
 void puts(const char *str)
+{
+    while (*str)
+    {
+        putc(*str);
+        str++;
+    }
+}
+
+void puts_f(const char far *str)
 {
     while (*str)
     {
@@ -30,7 +40,6 @@ int *printf_number(int *argp, int length, bool sign, int radix);
 
 void _cdecl printf(const char *fmt, ...)
 {
-
     int *argp = (int *)&fmt;
     int state = PRINTF_STATE_NORMAL;
     int length = PRINTF_LENGTH_DEFAULT;
@@ -38,9 +47,9 @@ void _cdecl printf(const char *fmt, ...)
     bool sign = false;
 
     argp++;
+
     while (*fmt)
     {
-
         switch (state)
         {
         case PRINTF_STATE_NORMAL:
@@ -51,7 +60,6 @@ void _cdecl printf(const char *fmt, ...)
                 break;
             default:
                 putc(*fmt);
-                break;
                 break;
             }
             break;
@@ -102,8 +110,16 @@ void _cdecl printf(const char *fmt, ...)
                 break;
 
             case 's':
-                puts(*(const char **)argp);
-                argp++;
+                if (length == PRINTF_LENGTH_LONG || length == PRINTF_LENGTH_LONG_LONG)
+                {
+                    puts_f(*(const char far **)argp);
+                    argp += 2;
+                }
+                else
+                {
+                    puts(*(const char **)argp);
+                    argp++;
+                }
                 break;
 
             case '%':
@@ -137,7 +153,7 @@ void _cdecl printf(const char *fmt, ...)
                 argp = printf_number(argp, length, sign, radix);
                 break;
 
-            // igonre invalid spec
+            // ignore invalid spec
             default:
                 break;
             }
@@ -149,11 +165,12 @@ void _cdecl printf(const char *fmt, ...)
             sign = false;
             break;
         }
+
         fmt++;
     }
 }
 
-const char g_HexChars[] = "0123456789ABCDEF";
+const char g_HexChars[] = "0123456789abcdef";
 
 int *printf_number(int *argp, int length, bool sign, int radix)
 {
@@ -216,7 +233,7 @@ int *printf_number(int *argp, int length, bool sign, int radix)
         }
         else
         {
-            number = *(unsigned long long *)argp;
+            number = *(unsigned long long int *)argp;
         }
         argp += 4;
         break;
