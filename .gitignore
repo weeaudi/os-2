@@ -1,2 +1,5 @@
 build/
 .vscode
+noVNC-1.4.0/
+.gitpod.yml
+open-watcom-2_0-c-linux-x64
