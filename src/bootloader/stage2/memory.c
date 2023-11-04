@@ -7,4 +7,6 @@ int memcpy(void far *dst, const void far *src, uint16_t num)
 
     for (uint16_t i = 0; i < num; i++)
         u8Dst[i] = u8Src[i];
+
+    return 0;
 }
