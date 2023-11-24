@@ -7,7 +7,7 @@ SRC_DIR=src
 TOOLS_DIR=tools
 BUILD_DIR=build
 
-.PHONY: all floppy_image kernel bootloader clean always
+.PHONY: all floppy_image kernel bootloader run debug clean always
 
 all: floppy_image tools_fat
 
@@ -62,6 +62,14 @@ $(BUILD_DIR)/tools/fat: always $(TOOLS_DIR)/fat/fat.c
 #
 always:
 	mkdir -p $(BUILD_DIR)
+
+run:
+	$(MAKE)
+	qemu-system-i386 -fda $(BUILD_DIR)/main_floppy.img
+
+debug:
+	$(MAKE)
+	bochs -f bochs_config
 
 #
 # Clean
