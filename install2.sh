@@ -1,1 +1,0 @@
-sudo ./open-watcom-2_0-c-linux-x64
