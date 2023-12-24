@@ -10,7 +10,7 @@ toolchain: toolchain_binutils toolchain_gcc
 BINUTILS_BUILD = toolchain/binutils-build-$(BINUTILS_VERSION)
 
 toolchain_binutils:
-	mkdir toolchain 
+	mkdir -p toolchain 
 	cd toolchain && wget $(TOOLCHAIN_BINUTILS_URL)
 	cd toolchain && tar -xf binutils-$(BINUTILS_VERSION).tar.xz
 	mkdir $(BINUTILS_BUILD)
